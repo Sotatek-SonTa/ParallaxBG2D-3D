@@ -1,0 +1,24 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MovingCamera : MonoBehaviour
+{
+    public float speed = 5f;
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    private void FixedUpdate()
+    {
+        Vector3 movement = new Vector3(1f, 0.0f, 0f);
+        transform.Translate(movement * speed * Time.deltaTime, Space.World);
+    }
+    void Update()
+    {
+        
+    }
+}
