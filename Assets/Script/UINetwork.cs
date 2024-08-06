@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.UI;
@@ -19,27 +21,27 @@ public class UINetwork : MonoBehaviour
     {
         startHostButton.onClick.AddListener(() =>
         {
-            string localIP = GetLocalIPAddress();
+            string localIP = GetLocalWifiIPAddress();
             Debug.Log("Local IP Address: " + localIP);
-            string ipAddress = GetLocalIPAddress();
-            hostIpAddressInputField.text = GetLocalIPAddress();
-            // ushort port = ushort.Parse(portInputField.text);
+            string ipAddress = localIP;
+            hostIpAddressInputField.text = localIP;
+            ushort port = ushort.Parse(portInputField.text);
 
             var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             unityTransport.ConnectionData.Address = ipAddress;
-            // unityTransport.ConnectionData.Port = port;
+            unityTransport.ConnectionData.Port = port;
             
             NetworkManager.Singleton.StartHost();
         });
 
         startClientButton.onClick.AddListener(() =>
         {
-            // string ipAddress = clientIpAddressInputField.text;
-            // ushort port = ushort.Parse(portInputField.text);
+            string ipAddress = clientIpAddressInputField.text;
+            ushort port = ushort.Parse(portInputField.text);
 
-            // var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            // unityTransport.ConnectionData.Address = ipAddress;
-            // unityTransport.ConnectionData.Port = port;
+            var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+            unityTransport.ConnectionData.Address = ipAddress;
+            unityTransport.ConnectionData.Port = port;
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().ConnectionData.Address = clientIpAddressInputField.text;
             NetworkManager.Singleton.StartClient();
@@ -66,5 +68,24 @@ public class UINetwork : MonoBehaviour
         }
 
         return localIP;
+    }
+    public string GetLocalWifiIPAddress()
+    {
+        foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            // Kiểm tra xem interface có phải là wireless và đang hoạt động
+            if (ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 && ni.OperationalStatus == OperationalStatus.Up)
+            {
+                foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
+                {
+                    // Kiểm tra địa chỉ IPv4 và không phải là loopback
+                    if (ip.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip.Address))
+                    {
+                        return ip.Address.ToString();
+                    }
+                }
+            }
+        }
+        return "No Wi-Fi network found.";
     }
 }
