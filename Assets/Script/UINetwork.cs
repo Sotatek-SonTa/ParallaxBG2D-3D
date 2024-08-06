@@ -17,24 +17,24 @@ public class UINetwork : MonoBehaviour
     {
         startHostButton.onClick.AddListener(() =>
         {
-            string ipAddress = hostIpAddressInputField.text;
-            ushort port = ushort.Parse(portInputField.text);
+            // string ipAddress = hostIpAddressInputField.text;
+            // ushort port = ushort.Parse(portInputField.text);
 
-            var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            unityTransport.ConnectionData.Address = ipAddress;
-            unityTransport.ConnectionData.Port = port;
+            // var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+            // unityTransport.ConnectionData.Address = ipAddress;
+            // unityTransport.ConnectionData.Port = port;
 
             NetworkManager.Singleton.StartHost();
         });
 
         startClientButton.onClick.AddListener(() =>
         {
-            string ipAddress = clientIpAddressInputField.text;
-            ushort port = ushort.Parse(portInputField.text);
+            // string ipAddress = clientIpAddressInputField.text;
+            // ushort port = ushort.Parse(portInputField.text);
 
-            var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            unityTransport.ConnectionData.Address = ipAddress;
-            unityTransport.ConnectionData.Port = port;
+            // var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+            // unityTransport.ConnectionData.Address = ipAddress;
+            // unityTransport.ConnectionData.Port = port;
 
             NetworkManager.Singleton.StartClient();
         });
