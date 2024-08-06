@@ -22,14 +22,15 @@ public class UINetwork : MonoBehaviour
         startHostButton.onClick.AddListener(() =>
         {
             string localIP = GetLocalWifiIPAddress();
+            if(hostIpAddressInputField.text==""){
+                hostIpAddressInputField.text = localIP;
+            }
             Debug.Log("Local IP Address: " + localIP);
-            string ipAddress = localIP;
-            hostIpAddressInputField.text = localIP;
-            ushort port = ushort.Parse(portInputField.text);
+            // ushort port = ushort.Parse(portInputField.text);
 
             var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            unityTransport.ConnectionData.Address = ipAddress;
-            unityTransport.ConnectionData.Port = port;
+            unityTransport.ConnectionData.Address = hostIpAddressInputField.text;
+            // unityTransport.ConnectionData.Port = port;
             
             NetworkManager.Singleton.StartHost();
         });
@@ -37,11 +38,11 @@ public class UINetwork : MonoBehaviour
         startClientButton.onClick.AddListener(() =>
         {
             string ipAddress = clientIpAddressInputField.text;
-            ushort port = ushort.Parse(portInputField.text);
+            // ushort port = ushort.Parse(portInputField.text);
 
             var unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             unityTransport.ConnectionData.Address = ipAddress;
-            unityTransport.ConnectionData.Port = port;
+            // unityTransport.ConnectionData.Port = port;
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().ConnectionData.Address = clientIpAddressInputField.text;
             NetworkManager.Singleton.StartClient();
