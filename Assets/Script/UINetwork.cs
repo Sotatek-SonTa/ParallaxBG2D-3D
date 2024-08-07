@@ -8,14 +8,15 @@ using Unity.Netcode;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode.Transports.UTP;
-public class UINetwork : MonoBehaviour
+public class UINetwork : NetworkBehaviour
 {
- [SerializeField] private Button startHostButton;
+    [SerializeField] private Button startHostButton;
     [SerializeField] private Button startClientButton;
+    [SerializeField] private Button addObjectButton;
     [SerializeField] private TMP_InputField hostIpAddressInputField;
     [SerializeField] private TMP_InputField clientIpAddressInputField;
     [SerializeField] private TMP_InputField portInputField;
-
+    [SerializeField] private GameObject prefab;
 
     private void Awake()
     {
@@ -47,6 +48,17 @@ public class UINetwork : MonoBehaviour
             NetworkManager.Singleton.GetComponent<UnityTransport>().ConnectionData.Address = clientIpAddressInputField.text;
             NetworkManager.Singleton.StartClient();
         });
+        addObjectButton.onClick.AddListener(()=>{
+
+            CreateObjectServerRpc(NetworkManager.Singleton.LocalClientId);
+
+        });
+    }
+    [ServerRpc(RequireOwnership = false)]
+    public void CreateObjectServerRpc(ulong clientId, ServerRpcParams rpcParams = default){
+            GameObject addedObject = Instantiate(prefab);
+            addedObject.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
+
     }
     public string GetLocalIPAddress()
     {
