@@ -22,7 +22,7 @@ public class PlayerMovment : NetworkBehaviour
       var horizontal = Input.GetAxis("Horizontal");
       var vertical = Input.GetAxis("Vertical");
       Vector3 newposition = new Vector3(horizontal, vertical, 0);
-      transform.position += moveSpeed * newposition * Time.deltaTime;
+      transform.position += moveSpeed * newposition * Time.fixedDeltaTime;
 
       if (NetworkManager.Singleton.IsClient)
       {
@@ -44,7 +44,7 @@ public class PlayerMovment : NetworkBehaviour
     otherPos = pos;
     
     // Gọi ClientRpc để đồng bộ hóa vị trí trên các client khác
-    SyncPlayerPosClientRpc(pos);
+    // SyncPlayerPosClientRpc(pos);
   }
 
   [ClientRpc]

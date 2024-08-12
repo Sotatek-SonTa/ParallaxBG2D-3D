@@ -10,12 +10,20 @@ public class BulletController : NetworkBehaviour
     void Start()
     {
         // Hủy đối tượng này sau khi hết thời gian sống
-        Destroy(gameObject, lifetime);
+    }
+    public void DestroyBullet(){
+        // Destroy(gameObject, lifetime);
+
+        NetworkObject.Despawn();
     }
 
     void Update()
     {
         // Di chuyển đạn sang phải theo trục X
         transform.Translate(Vector3.right * speed * Time.deltaTime);
+        lifetime -= Time.deltaTime;
+        if(lifetime<0)
+            if(IsServer)
+                DestroyBullet();
     }
 }

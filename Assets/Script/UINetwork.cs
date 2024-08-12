@@ -13,11 +13,17 @@ public class UINetwork : NetworkBehaviour
     [SerializeField] private Button startHostButton;
     [SerializeField] private Button startClientButton;
     [SerializeField] private Button addObjectButton;
+    [SerializeField] private Button kickClientButton;
     [SerializeField] private TMP_InputField hostIpAddressInputField;
     [SerializeField] private TMP_InputField clientIpAddressInputField;
     [SerializeField] private TMP_InputField portInputField;
     [SerializeField] private GameObject prefab;
+    [SerializeField] private GameObject obstacle;
+    [SerializeField] private TextMeshProUGUI timeElapseUI;
+    [SerializeField] private TextMeshProUGUI clientCounterUI;
 
+    [SerializeField] NetworkVariable<float> timeElapse;
+    [SerializeField] NetworkVariable<int> clientCounter;
     private void Awake()
     {
         startHostButton.onClick.AddListener(() =>
@@ -34,6 +40,13 @@ public class UINetwork : NetworkBehaviour
             // unityTransport.ConnectionData.Port = port;
             
             NetworkManager.Singleton.StartHost();
+            if(IsServer){
+                var newObstacle = Instantiate(obstacle, new Vector3(0, -2, 0), Quaternion.identity);
+                newObstacle.transform.position = new Vector3(0,1,0);
+                newObstacle.GetComponent<NetworkObject>().Spawn();
+                timeElapse.Value = 0;
+                clientCounter.Value = 0;
+            }
         });
 
         startClientButton.onClick.AddListener(() =>
@@ -51,14 +64,67 @@ public class UINetwork : NetworkBehaviour
         addObjectButton.onClick.AddListener(()=>{
 
             CreateObjectServerRpc(NetworkManager.Singleton.LocalClientId);
+            if(IsServer)
+                timeElapse.Value += 10;
+        });
 
+        kickClientButton.onClick.AddListener(()=>{
+            if(IsServer)
+                ShutdownClientRpc();
         });
     }
+
+    private void Start() {
+        // if(IsServer){
+        //     var newObstacle = Instantiate(obstacle);
+        //     newObstacle.GetComponent<NetworkObject>().Spawn();
+        // }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += (ulong clientId) =>
+            {
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { clientId }
+                    }
+                };
+                StartCoroutine(IEWaitForLeaving());
+                IEnumerator IEWaitForLeaving()
+                {
+                    yield return new WaitForSeconds(10f);
+                    ShutdownClientRpc(clientRpcParams);
+                }
+            };
+        }
+    }
+
     [ServerRpc(RequireOwnership = false)]
     public void CreateObjectServerRpc(ulong clientId, ServerRpcParams rpcParams = default){
             GameObject addedObject = Instantiate(prefab);
             addedObject.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
 
+    }
+
+    [ClientRpc]
+    private void ShutdownClientRpc(ClientRpcParams clientRpcParams = default){
+        if(!IsHost)
+            NetworkManager.Singleton.Shutdown();
+    }
+    private void FixedUpdate() {
+        if(IsServer){
+            timeElapse.Value += Time.fixedDeltaTime;
+            clientCounter.Value = NetworkManager.Singleton.ConnectedClientsList.Count;
+        }
+        if(IsClient){
+            timeElapseUI.text = timeElapse.Value.ToString();
+            clientCounterUI.text = clientCounter.Value.ToString();
+        }
     }
     public string GetLocalIPAddress()
     {

@@ -13,15 +13,18 @@ public class GunController : NetworkBehaviour
         if(!IsOwner) return;
         if (Input.GetMouseButtonDown(0)) // Kiểm tra nếu chuột trái được nhấn
         {
-            ShootServerRpc();
+            ShootServerRpc(transform.position);
         }
     }
     [ServerRpc]
-    void ShootServerRpc()
+    void ShootServerRpc(Vector3 position)
     {
         // Tạo một instance của đạn tại firePoint
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-        bullet.GetComponent<NetworkObject>().Spawn();
+        // GameObject bullet = Instantiate(bulletPrefab, position, firePoint.rotation);
+        var bullet = ObjectPool.Instance.poolOjbects[bulletPrefab].Get();
+        bullet.transform.position = position;
+        bullet.Spawn();
+        // bullet.GetComponent<NetworkObject>().Spawn();
         // Thêm lực đẩy vào đạn để nó di chuyển
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
         if (rb != null)
